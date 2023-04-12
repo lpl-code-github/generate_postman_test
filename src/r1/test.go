@@ -9,47 +9,9 @@ import (
 	"strconv"
 )
 
-type T struct {
-	DateStates []struct {
-		Id         string `json:"id"`
-		Name       string `json:"name"`
-		Label      string `json:"label"`
-		ShortLabel string `json:"short_label"`
-		CreatedAt  string `json:"created_at"`
-		UpdatedAt  string `json:"updated_at"`
-	} `json:"date_states"`
-	TokenUser struct {
-		Id         string `json:"id"`
-		Surname    string `json:"surname"`
-		Forename   string `json:"forename"`
-		FirstName  string `json:"first_name"`
-		FullName   string `json:"full_name"`
-		Name       string `json:"name"`
-		Token      string `json:"token"`
-		Email      string `json:"email"`
-		Type       string `json:"type"`
-		LoginState string `json:"login_state"`
-		Properties struct {
-			Lang       string `json:"lang"`
-			DateFormat string `json:"dateFormat"`
-			DateSymbol string `json:"dateSymbol"`
-			TimeFormat string `json:"timeFormat"`
-		} `json:"properties"`
-		HiddenFolders interface{} `json:"hidden_folders"`
-		Active        string      `json:"active"`
-		CreatedAt     string      `json:"created_at"`
-		UpdatedAt     string      `json:"updated_at"`
-		OwnerType     string      `json:"owner_type"`
-		ProjectOrder  []struct {
-			Field1 []interface{} `json:"-1"`
-		} `json:"project_order"`
-		IsObserving bool `json:"is_observing"`
-	} `json:"token_user"`
-}
-
 func main() {
 	// 读取外部 JSON 文件（input）
-	jsonFile, fileErr := ioutil.ReadFile("/Users/lpl/code/go-project/generate_postman_test/src/r1/input/input.json")
+	jsonFile, fileErr := ioutil.ReadFile("D:\\miaomiao\\go-project\\generate_postman_test\\src\\r1\\input\\input.json")
 	if fileErr != nil {
 		log.Fatal(fileErr)
 	}
@@ -69,7 +31,7 @@ func main() {
 	}
 
 	// 创建并打开输出文件
-	file, err := os.Create("/Users/lpl/code/go-project/generate_postman_test/src/r1/output/output.js")
+	file, err := os.Create("D:\\miaomiao\\go-project\\generate_postman_test\\src\\r1\\output\\output.js")
 	if err != nil {
 		log.Fatal(err)
 	}
