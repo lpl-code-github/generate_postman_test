@@ -38,33 +38,25 @@ func main() {
 	defer file.Close()
 
 	// 写入 JavaScript 代码模板和 JSON Schema
-	jsTemplate := `var schema = %s;
-
-pm.test('Schema is valid', function() {
-	var jsonData = pm.response.json();
-	pm.expect(tv4.validate(jsonData, schema)).to.be.true;
-});
-`
-
-	jsCode := fmt.Sprintf(jsTemplate, string(schemaBytes)) // 把json格式的schema写入js模版
-
-	_, err = file.WriteString(jsCode) // 将 JavaScript 代码模板和 JSON Schema 写入输出文件
+	jsCode := getJsonSchemaTest(schemaBytes)
+	// 将 JavaScript 代码模板和 JSON Schema 写入输出文件
+	_, err = file.WriteString(jsCode)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("JavaScript code written to file!")
+	log.Println("JavaScript code written to file!")
 }
 
 // 生成 JSON Schema 的函数
 func generateSchema(data interface{}, parentFiled interface{}) interface{} {
 	switch v := data.(type) {
-	case map[string]interface{}: // 处理对象类型数据
+	case map[string]interface{}:
 		properties := make(map[string]interface{})
 		var keys []string
 
 		for k, vv := range v { // 遍历对象中的键值对
-			keys = append(keys, k)                   // 记录键名到键名字符串切片中
+			keys = append(keys, k)                   // 记录键名到键名字符串数组中
 			properties[k] = generateSchema(vv, data) // 递归解析当前键值并赋值给属性集合
 		}
 
@@ -73,9 +65,9 @@ func generateSchema(data interface{}, parentFiled interface{}) interface{} {
 			"type":       "object",
 			"required":   keys,
 		}
-	case []interface{}: // 处理数组类型数据
-		arr := data.([]interface{}) // 强制类型转换为数组类型
-		if len(arr) == 0 {          // 如果数组为空，则返回类型为数组的对象
+	case []interface{}:
+		arr := data.([]interface{})
+		if len(arr) == 0 { // 如果数组为空，则返回类型为数组的对象
 			return map[string]interface{}{
 				"type": "array",
 			}
@@ -92,27 +84,27 @@ func generateSchema(data interface{}, parentFiled interface{}) interface{} {
 			}
 		}
 
-	case float64: // 处理浮点数类型数据
-		return map[string]interface{}{ // 返回包含数据类型为整型的 json object
+	case float64:
+		return map[string]interface{}{
 			"type": "integer",
 		}
-	case bool: // 处理布尔类型数据
-		return map[string]interface{}{ // 返回包含数据类型为布尔型的 json object
+	case bool:
+		return map[string]interface{}{
 			"type": "boolean",
 		}
-	case string: // 处理字符串类型数据
+	case string:
 		s := fmt.Sprintf("%v", data) // 定义临时字符串变量并将数据转换为字符串类型
 		// 有些时候 postman 会把数值型的字符串认为是 integer，这里多加一手判断
-		if isStringInt(s) { // 如果字符串可以解析为整型
-			return map[string]interface{}{ // 返回包含数据类型为字符串和整型的 json object
+		if isStringInt(s) {
+			return map[string]interface{}{
 				"type": []interface{}{"string", "integer"},
 			}
 		}
-		return map[string]interface{}{ // 否则返回包含数据类型为字符串的 json object
+		return map[string]interface{}{
 			"type": "string",
 		}
 	default:
-		return map[string]interface{}{ // 处理其他类型数据，返回包含数据类型为 null 的 json object
+		return map[string]interface{}{
 			"type": "null",
 		}
 	}
@@ -122,4 +114,19 @@ func generateSchema(data interface{}, parentFiled interface{}) interface{} {
 func isStringInt(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
+}
+
+// 返回JsonSchemaTest测试模板
+func getJsonSchemaTest(schemaBytes []byte) string {
+	// 写入 JavaScript 代码模板和 JSON Schema
+	jsTemplate := `const schema = %s;
+
+pm.test('Schema is valid', function() {
+	var jsonData = pm.response.json();
+	pm.expect(tv4.validate(jsonData, schema)).to.be.true;
+});
+`
+
+	jsCode := fmt.Sprintf(jsTemplate, string(schemaBytes)) // 把json格式的schema写入js模版
+	return jsCode
 }
